@@ -119,7 +119,10 @@ driver_sources = {
     'egismoc' : files('drivers/egismoc/egismoc.c'),
     'egis_etu905' : files('drivers/egismoc/egis_etu905.c'),
     'vfs0050' : files('drivers/vfs0050.c'),
-    'elan' : files('drivers/elan.c'),
+    'elan' : files(
+        'drivers/elan.c',
+        'drivers/sift_engine.cpp'
+    ),
     'elanmoc' : files('drivers/elanmoc/elanmoc.c'),
     'elanspi' : files('drivers/elanspi.c'),
     'nb1010' : files('drivers/nb1010.c'),
@@ -208,6 +211,9 @@ drivers_sources += configure_file(input: 'empty_file',
         '\n'.join(drivers_type_list + [] + drivers_type_func)
     ])
 
+opencv_dep = dependency('opencv4')
+libusb_dep = dependency('libusb-1.0')
+
 deps = [
     enums_dep,
     gio_dep,
@@ -216,6 +222,8 @@ deps = [
     gobject_dep,
     gusb_dep,
     mathlib_dep,
+    opencv_dep,
+    libusb_dep,
 ] + optional_deps
 
 # These are empty and only exist so that the include directories are created
