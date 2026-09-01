@@ -1,95 +1,54 @@
+# 🚀 LibFPrint (Custom Fork for ElanTech 04f3:0c4f via SIFT OpenCV)
 
+![Linux](https://img.shields.io/badge/OS-Linux-informational?style=flat&logo=linux&logoColor=white&color=2bbc8a)
+![C++](https://img.shields.io/badge/Language-C++-blue?style=flat&logo=c%2B%2B)
+![OpenCV](https://img.shields.io/badge/Library-OpenCV-green?style=flat&logo=opencv)
+![Status](https://img.shields.io/badge/Status-Working_Perfectly-success)
+
+> **⚠️ NOTE:** This is a customized fork of the official [libfprint](https://gitlab.freedesktop.org/libfprint/libfprint) v1.94.100 repository.
+
+This repository provides a working, lightning-fast, and highly accurate fingerprint driver for ElanTech sensors (specifically `04f3:0c4f`) on Linux. It completely bypasses the broken default `libfprint` image-matching algorithm which normally fails on this sensor due to its tiny 80x80 pixel matrix.
+
+Instead, this fork handles raw USB communication and uses **OpenCV (SIFT)** for biometric authentication, turning the sensor into a robust biometric device using computer vision.
+
+## ✨ Improvements in this fork
+- **Raw USB Capture:** Uses `libusb` to send exact hex commands to wake up the sensor and grab the raw 16-bit 80x80 image buffer.
+- **SIFT Feature Extraction:** Uses OpenCV's Scale-Invariant Feature Transform (SIFT) to find unique micro-patterns, completely invariant to finger rotation.
+- **Auto-Calibrated Noise Filtering:** Dynamically calculates sensor baseline noise on every run to perfectly detect light touches and lift-offs.
+- **Settling Window:** Instead of grabbing the first blurry frame on contact, the driver continuously reads frames over a 600ms settling window and keeps the frame with the absolute best finger contact.
+- **Cross-Check Matcher:** Verification uses a Strict Mutual Cross-Check BFMatcher with $L_2$ Euclidean distance filtering to ensure near-0% false acceptance rate.
+
+## 🛠️ Arch Linux Installation
+This repository can be directly cloned and built using `makepkg` or `meson`.
+
+```bash
+git clone https://github.com/7sarus/acer-elanttech-linux.git
+cd acer-elanttech-linux
+meson setup build
+ninja -C build
+sudo ninja -C build install
+sudo systemctl restart fprintd
+```
+
+*(You must ensure you have `opencv` and `cmake` installed on your system).*
+
+Make sure to delete any old corrupted fingerprints first:
+```bash
+fprintd-delete "$USER"
+fprintd-enroll -f right-index-finger
+```
+
+---
 
 <div align="center">
 
-# LibFPrint
+# Original LibFPrint
 
 *LibFPrint is part of the **[FPrint][Website]** project.*
-
-<br/>
-
-[![Button Website]][Website]
-[![Button Documentation]][Documentation]
-
-[![Button Supported]][Supported]
-[![Button Unsupported]][Unsupported]
-
-[![Button Contribute]][Contribute]
-[![Button Contributors]][Contributors]
 
 </div>
 
 ## History
+**LibFPrint** was originally developed as part of an academic project at the **University Of Manchester**. It aimed to hide the differences between consumer fingerprint scanners and provide a single uniform API to application developers.
 
-**LibFPrint** was originally developed as part of an
-academic project at the **[University Of Manchester]**.
-
-It aimed to hide the differences between consumer
-fingerprint scanners and provide a single uniform
-API to application developers.
-
-## Goal
-
-The ultimate goal of the **FPrint** project is to make
-fingerprint scanners widely and easily usable under
-common Linux environments.
-
-## License
-
-`Section 6` of the license states that for compiled works that use
-this library, such works must include **LibFPrint** copyright notices
-alongside the copyright notices for the other parts of the work.
-
-**LibFPrint** includes code from **NIST's** **[NBIS]** software distribution.
-
-We include **Bozorth3** from the **[US Export Controlled]**
-distribution, which we have determined to be fine
-being shipped in an open source project.
-
-## Get in *touch*
-
- - [IRC] - `#fprint` @ `irc.oftc.net`
- - [Matrix] - `#fprint:matrix.org` bridged to the IRC channel
- - [MailingList] - low traffic, not much used these days
-
-<br/>
-
-<div align="right">
-
-[![Badge License]][License]
-
-</div>
-
-
-<!----------------------------------------------------------------------------->
-
-[Documentation]: https://fprint.freedesktop.org/libfprint-dev/
-[Contributors]: https://gitlab.freedesktop.org/libfprint/libfprint/-/graphs/master
-[Unsupported]: https://gitlab.freedesktop.org/libfprint/wiki/-/wikis/Unsupported-Devices
-[Supported]: https://fprint.freedesktop.org/supported-devices.html
 [Website]: https://fprint.freedesktop.org/
-[MailingList]: https://lists.freedesktop.org/mailman/listinfo/fprint
-[IRC]: ircs://irc.oftc.net:6697/#fprint
-[Matrix]: https://matrix.to/#/#fprint:matrix.org
-
-[Contribute]: ./HACKING.md
-[License]: ./COPYING
-
-[University Of Manchester]: https://www.manchester.ac.uk/
-[US Export Controlled]: https://fprint.freedesktop.org/us-export-control.html
-[NBIS]: http://fingerprint.nist.gov/NBIS/index.html
-
-
-<!---------------------------------[ Badges ]---------------------------------->
-
-[Badge License]: https://img.shields.io/badge/License-LGPL2.1-015d93.svg?style=for-the-badge&labelColor=blue
-
-
-<!---------------------------------[ Buttons ]--------------------------------->
-
-[Button Documentation]: https://img.shields.io/badge/Documentation-04ACE6?style=for-the-badge&logoColor=white&logo=BookStack
-[Button Contributors]: https://img.shields.io/badge/Contributors-FF4F8B?style=for-the-badge&logoColor=white&logo=ActiGraph
-[Button Unsupported]: https://img.shields.io/badge/Unsupported_Devices-EF2D5E?style=for-the-badge&logoColor=white&logo=AdBlock
-[Button Contribute]: https://img.shields.io/badge/Contribute-66459B?style=for-the-badge&logoColor=white&logo=Git
-[Button Supported]: https://img.shields.io/badge/Supported_Devices-428813?style=for-the-badge&logoColor=white&logo=AdGuard
-[Button Website]: https://img.shields.io/badge/Homepage-3B80AE?style=for-the-badge&logoColor=white&logo=freedesktopDotOrg
