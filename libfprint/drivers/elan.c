@@ -1,5 +1,6 @@
 #define FP_COMPONENT "device_elan"
 
+#include <stdio.h>
 #include "drivers_api.h"
 #include "sift_engine.h"
 
@@ -62,7 +63,6 @@ static gboolean elan_verify_timeout(gpointer user_data) {
         }
     }
 
-    // Если совпало - отдаем отпечаток, если нет - отдаем NULL
     fpi_device_verify_report(device, match ? FPI_MATCH_SUCCESS : FPI_MATCH_FAIL, match ? print : NULL, NULL);
     fpi_device_verify_complete(device, NULL);
     
@@ -87,7 +87,8 @@ static void fpi_device_elan_class_init(FpiDeviceElanClass *klass) {
     dev_class->type = FP_DEVICE_TYPE_USB;
     dev_class->id_table = elan_id_table;
     dev_class->scan_type = FP_SCAN_TYPE_PRESS;
-    dev_class->features = FP_DEVICE_FEATURE_VERIFY; 
+    dev_class->nr_enroll_stages = 5;
+    dev_class->features = FP_DEVICE_FEATURE_CAPTURE | FP_DEVICE_FEATURE_VERIFY;
     
     dev_class->open = elan_open;
     dev_class->close = elan_close;
@@ -97,3 +98,4 @@ static void fpi_device_elan_class_init(FpiDeviceElanClass *klass) {
 
 static void fpi_device_elan_init(FpiDeviceElan *self) {
 }
+

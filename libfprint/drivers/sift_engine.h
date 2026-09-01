@@ -14,3 +14,4 @@ int sift_engine_verify(const unsigned char* saved_data, int data_size);
 #endif
 
 #endif // SIFT_ENGINE_H
+

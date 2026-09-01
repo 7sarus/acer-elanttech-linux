@@ -417,3 +417,4 @@ if get_option('introspection')
     libfprint_gir = libfprint_girtarget[0]
     libfprint_typelib = libfprint_girtarget[1]
 endif
+
