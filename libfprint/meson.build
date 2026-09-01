@@ -211,7 +211,13 @@ drivers_sources += configure_file(input: 'empty_file',
         '\n'.join(drivers_type_list + [] + drivers_type_func)
     ])
 
-opencv_dep = dependency('opencv4')
+opencv_dep = dependency('opencv4', required: false)
+if not opencv_dep.found()
+  opencv_dep = dependency('opencv5', required: false)
+endif
+if not opencv_dep.found()
+  opencv_dep = dependency('opencv', required: true)
+endif
 libusb_dep = dependency('libusb-1.0')
 
 deps = [
