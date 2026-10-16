@@ -261,7 +261,7 @@ int sift_engine_verify(const unsigned char* saved_data, int data_size) {
     double total_dist = 0;
     for (const auto& m : matches) {
         // Natural SIFT distance range on 80x80 sensor
-        if (m.distance < 300.0f) {
+        if (m.distance < 155.0f) {
             good_matches++;
             total_dist += m.distance;
         }
@@ -278,7 +278,7 @@ int sift_engine_verify(const unsigned char* saved_data, int data_size) {
     cerr << "  >>> [SIFT MATCH] " << good_matches << " confident matches (dist < 300, avg: " 
          << std::fixed << std::setprecision(1) << avg_dist << ", threshold: 6)" << endl;
 
-    bool match = (good_matches >= 6);
+    bool match = (good_matches >= 9 && avg_dist <= 142.0);
     cerr << "  >>> [SIFT RESULT] " << (match ? "MATCH SUCCESS (VERIFIED)" : "MATCH FAILED (REJECTED)") << endl;
     cerr << "========================================================\n" << endl;
     return match ? 1 : 0;
