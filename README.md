@@ -18,25 +18,66 @@ Instead, this fork handles raw USB communication and uses **OpenCV (SIFT)** for 
 - **Settling Window:** Instead of grabbing the first blurry frame on contact, the driver continuously reads frames over a 600ms settling window and keeps the frame with the absolute best finger contact.
 - **Cross-Check Matcher:** Verification uses a Strict Mutual Cross-Check BFMatcher with $L_2$ Euclidean distance filtering to ensure near-0% false acceptance rate.
 
-## 🛠️ Arch Linux Installation
-This repository can be directly cloned and built using `makepkg` or `meson`.
+## 🛠️ Step-by-Step Installation (Arch Linux / EndeavourOS)
 
+### 1. Install Required Dependencies
+Install the required development toolchain, OpenCV, and cryptographic/system libraries:
 ```bash
-git clone https://github.com/7sarus/acer-elanttech-linux.git
-cd acer-elanttech-linux
-meson setup build
-ninja -C build
-sudo ninja -C build install
-sudo systemctl restart fprintd
+sudo pacman -S --needed base-devel git meson ninja libusb glib2 pixman libgusb nss polkit libgudev opencv vtk fprintd cmake
 ```
 
-*(You must ensure you have `opencv` and `cmake` installed on your system).*
+### 2. Clone and Build
+Build the driver using meson and ninja. Passing -Ddoc=false avoids build failures caused by missing documentation scanners or unlinked VTK symbols:
 
-Make sure to delete any old corrupted fingerprints first:
 ```bash
+git clone https://github.com/jomitrix/acer-elanttech-linux.git
+cd acer-elanttech-linux
+
+# Configure with system prefix to cleanly replace stock libfprint
+meson setup build --prefix=/usr -Ddoc=false
+
+# Compile and install
+ninja -C build
+sudo ninja -C build install
+```
+
+### 3. Disable USB Autosuspend (Mandatory)
+Kernel power-management frequently suspends the Elan sensor, resulting in device-disconnected timeouts or stalled verification attempts.
+Make permanent continuous power mode for vendor 04f3 / product 0c4f:
+
+```bash
+echo 'ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="04f3", ATTR{idProduct}=="0c4f", ATTR{power/control}="on"' | sudo tee /etc/udev/rules.d/99-elan-fingerprint.rules
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+### 4. Lock Pacman Upgrades
+Prevent future system updates from overwriting the compiled driver with upstream stock binaries:
+
+Open `/etc/pacman.conf` in your text editor and in the `[options]` section set:
+```bash
+IgnorePkg = libfprint
+```
+
+### 5. Reset Storage & Enroll Fingerprint
+Clear legacy corrupted templates, restart the daemon, and enroll your right index finger:
+
+```bash
+sudo rm -rf /var/lib/fprint/*
+sudo systemctl restart fprintd
+
 fprintd-delete "$USER"
 fprintd-enroll -f right-index-finger
 ```
+
+## 🐞 Troubleshooting & Debugging
+If the sensor fails to react to touch or verification results look abnormal, run the daemon manually in verbose mode:
+
+```bash
+sudo systemctl stop fprintd
+sudo G_MESSAGES_DEBUG=all /usr/lib/fprintd
+```
+In a secondary terminal window, invoke fprintd-verify.
+The primary window will display the captured noise floor, live keypoint count, top descriptor distances, and match verdict in real time.
 
 ---
 
